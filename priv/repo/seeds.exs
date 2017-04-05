@@ -13,7 +13,10 @@ alias OpenPantry.Facility
 alias OpenPantry.Language
 alias OpenPantry.Repo
 alias OpenPantry.User
+alias OpenPantry.UserCredit
 alias OpenPantry.CreditType
+import Ecto.Query
+import OpenPantry.Factory
 
 
 facility_params = [
@@ -68,6 +71,15 @@ Enum.each(credit_type_params, fn(params) ->
   |> Repo.insert!()
 end)
 
+food_groups = for _ <- 1..20 do
+  insert(:food_group)
+end
+foods = for food_group <- food_groups do
+  insert(:food, food_group: food_group)
+  insert(:food, food_group: food_group)
+  insert(:food, food_group: food_group)
+end
+
 File.read!("priv/repo/languages.json")
 |> Poison.Parser.parse!
 |> Enum.each(
@@ -84,3 +96,13 @@ User.changeset(%User{}, %{name: "Anonymous",
                          })
 |> Repo.insert!()
 
+credit_types = CreditType |> Repo.all
+user_credits = for credit_type <- credit_types do
+  insert(:user_credit, credit_type: credit_type, user: (from u in User, where: u.id == 1) |> Repo.one )
+end
+
+
+facility = from f in Facility, where: f.id == 1
+stocks = for food <- foods do
+  insert(:stock, facility: facility, food: food)
+end
